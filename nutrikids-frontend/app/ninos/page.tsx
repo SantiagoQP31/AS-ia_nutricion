@@ -255,9 +255,9 @@ export default function NinosPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Todos</SelectItem>
-                  <SelectItem value="MASCULINO">Masculino</SelectItem>
-                  <SelectItem value="FEMENINO">Femenino</SelectItem>
-                  <SelectItem value="OTRO">Otro</SelectItem>
+                  <SelectItem value="M">Masculino</SelectItem>
+                  <SelectItem value="F">Femenino</SelectItem>
+                  {/*<SelectItem value="OTRO">Otro</SelectItem>*/}
                 </SelectContent>
               </Select>
               <div className="md:col-span-3 lg:col-span-5 flex gap-2">

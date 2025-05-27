@@ -1,13 +1,34 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, TrendingUp, AlertTriangle, Calendar } from "lucide-react"
+import { Users, TrendingUp, AlertTriangle, Calendar, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function HomePage() {
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Monitoreo nutricional infantil - Visión general del sistema</p>
+      {/* Header con botón de logout adicional */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Monitoreo nutricional infantil - Visión general del sistema</p>
+        </div>
+
+        {/* Botón de logout adicional en el header principal */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Esto se manejará desde el contexto de auth
+              window.dispatchEvent(new CustomEvent("logout"))
+            }}
+            className="text-red-600 border-red-200 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Cerrar Sesión
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

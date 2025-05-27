@@ -54,7 +54,7 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 
   useEffect(() => {
     if (childId) {
@@ -257,9 +257,9 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
                   <SelectValue placeholder="Seleccionar sexo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MASCULINO">Masculino</SelectItem>
-                  <SelectItem value="FEMENINO">Femenino</SelectItem>
-                  <SelectItem value="OTRO">Otro</SelectItem>
+                  <SelectItem value="M">Masculino</SelectItem>
+                  <SelectItem value="F">Femenino</SelectItem>
+                  {/*<SelectItem value="OTRO">Otro</SelectItem>*/}
                 </SelectContent>
               </Select>
               {errors.sexo && <p className="text-sm text-red-500 mt-1">{errors.sexo}</p>}
