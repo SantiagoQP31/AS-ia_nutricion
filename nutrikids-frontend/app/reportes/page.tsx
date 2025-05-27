@@ -62,11 +62,14 @@ export default function ReportesPage() {
         toast.error("No se pudieron cargar las estadísticas rápidas")
       }
 
-      // Cargar reporte grupal
+      // Cargar reporte grupal con fallback mejorado
       try {
         console.log("📈 Cargando reporte grupal...")
         const grupalData = await reportApiService.getReporteGrupal()
-        console.log("✅ Reporte grupal cargado:", grupalData)
+        console.log("✅ Reporte grupal cargado - ESTRUCTURA COMPLETA:", grupalData)
+        console.log("📊 Total niños en reporte:", grupalData?.total_ninos)
+        console.log("📊 Estadísticas nutricionales:", grupalData?.estadisticas_nutricionales)
+        console.log("📊 Estadísticas sexo:", grupalData?.estadisticas_sexo)
         setReporteGrupal(grupalData)
       } catch (error) {
         console.error("❌ Error cargando reporte grupal:", error)
@@ -214,6 +217,27 @@ export default function ReportesPage() {
     }
   }
 
+  const testGroupReport = async () => {
+    try {
+      console.log("🧪 Probando reporte grupal manualmente...")
+      const grupalData = await reportApiService.getReporteGrupal()
+      console.log("📊 Datos del reporte grupal:", grupalData)
+
+      // Verificar estructura específica
+      console.log("🔍 Verificando estructura:")
+      console.log("- total_ninos:", grupalData?.total_ninos)
+      console.log("- estadisticas_nutricionales:", grupalData?.estadisticas_nutricionales)
+      console.log("- estadisticas_sexo:", grupalData?.estadisticas_sexo)
+      console.log("- fecha_generacion:", grupalData?.fecha_generacion)
+
+      setReporteGrupal(grupalData)
+      toast.success("Reporte grupal cargado manualmente")
+    } catch (error) {
+      console.error("❌ Error en test de reporte grupal:", error)
+      toast.error(`Error: ${error}`)
+    }
+  }
+
   if (loading && !reporteGrupal && !estadisticasRapidas) {
     return (
       <div className="p-6">
@@ -267,22 +291,19 @@ export default function ReportesPage() {
           <Button onClick={testIndividualEndpoints} variant="outline" size="sm">
             Probar Todos los Endpoints
           </Button>
+          <Button onClick={testGroupReport} variant="outline" size="sm">
+            Probar Reporte Grupal
+          </Button>
           <Button onClick={fetchInitialData} variant="outline" size="sm">
             Recargar Datos
           </Button>
         </div>
-        <p className="text-xs text-yellow-700 mt-2">
-          API URL: {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}
-        </p>
         {error && (
           <div className="mt-2 p-2 bg-red-100 rounded text-red-800 text-xs">
             <strong>Error:</strong> {error}
           </div>
         )}
       </div>
-
-      {/* Estadísticas rápidas */}
-      
 
       {/* Selector de niño para reportes individuales */}
       <Card>
