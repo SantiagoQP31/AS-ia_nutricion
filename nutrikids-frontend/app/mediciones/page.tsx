@@ -258,7 +258,7 @@ export default function MedicionesPage() {
                       <div className="ml-6">
                         <Button
                           variant="outline"
-                          onClick={() => router.push(`/mediciones/${measurement.child_id}`)}
+                          onClick={() => router.push(`/mediciones/${measurement.child_id}/page.tsx`)}
                           className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
                         >
                           Ver Historial

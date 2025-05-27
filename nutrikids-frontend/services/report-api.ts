@@ -27,28 +27,39 @@ class ReportApiService {
 
   // Obtener reporte grupal con filtros opcionales
   async getReporteGrupal(filtros?: ReportFilter): Promise<ReporteGrupal> {
-    const params = new URLSearchParams()
+    try {
+      const params = new URLSearchParams()
 
-    if (filtros) {
-      Object.entries(filtros).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          params.append(
-            key === "rango_edad_min" ? "edad_min" : key === "rango_edad_max" ? "edad_max" : key,
-            value.toString(),
-          )
-        }
-      })
+      if (filtros) {
+        Object.entries(filtros).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            params.append(
+              key === "rango_edad_min" ? "edad_min" : key === "rango_edad_max" ? "edad_max" : key,
+              value.toString(),
+            )
+          }
+        })
+      }
+
+      const url = `${this.apiBase}/reports/group${params.toString() ? `?${params}` : ""}`
+      console.log("Llamando a:", url)
+
+      const response = await fetch(url)
+      console.log("Response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Error response:", errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log("Reporte grupal recibido:", data)
+      return data
+    } catch (error) {
+      console.error("Error en getReporteGrupal:", error)
+      throw error
     }
-
-    const url = `${this.apiBase}/reports/group${params.toString() ? `?${params}` : ""}`
-    const response = await fetch(url)
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || "Error al cargar el reporte grupal")
-    }
-
-    return response.json()
   }
 
   // Obtener reporte de seguimiento de un niño
@@ -65,13 +76,42 @@ class ReportApiService {
 
   // Obtener estadísticas rápidas
   async getEstadisticasRapidas(): Promise<EstadisticasRapidas> {
-    const response = await fetch(`${this.apiBase}/reports/stats/quick`)
+    try {
+      const url = `${this.apiBase}/reports/stats/quick`
+      console.log("🔍 Llamando a estadísticas rápidas:", url)
 
-    if (!response.ok) {
-      throw new Error("Error al cargar las estadísticas rápidas")
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      console.log("📊 Response status:", response.status)
+      console.log("📊 Response headers:", Object.fromEntries(response.headers.entries()))
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Error response:", errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log("✅ Estadísticas recibidas:", data)
+
+      // Verificar la estructura de los datos
+      console.log("🔍 Estructura de datos:")
+      console.log("- total_ninos:", data.total_ninos)
+      console.log("- total_mediciones:", data.total_mediciones)
+      console.log("- total_clasificaciones:", data.total_clasificaciones)
+      console.log("- ultima_medicion:", data.ultima_medicion)
+      console.log("- ultima_clasificacion:", data.ultima_clasificacion)
+
+      return data
+    } catch (error) {
+      console.error("💥 Error completo en getEstadisticasRapidas:", error)
+      throw error
     }
-
-    return response.json()
   }
 
   // Método de verificación de salud
