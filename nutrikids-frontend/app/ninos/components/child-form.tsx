@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,22 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
-
-interface ChildFormData {
-  nombre: string
-  apellido: string
-  tipo_documento: string
-  documento: string
-  fecha_nacimiento: string
-  sexo: string
-  direccion: string
-  institucion: string
-  barrio: string
-  nombre_acudiente: string
-  parentesco_acudiente: string
-  telefono_acudiente: string
-  consentimiento_informado: boolean
-}
+import { childApiService } from "@/services/child-api"
+import type { ChildCreate, ChildUpdate } from "@/types/child"
 
 interface ChildFormProps {
   childId?: string | null
@@ -33,13 +18,13 @@ interface ChildFormProps {
   onCancel: () => void
 }
 
-const initialFormData: ChildFormData = {
+const initialFormData: ChildCreate = {
   nombre: "",
   apellido: "",
-  tipo_documento: "",
+  tipo_documento: "RC",
   documento: "",
   fecha_nacimiento: "",
-  sexo: "",
+  sexo: "M",
   direccion: "",
   institucion: "",
   barrio: "",
@@ -50,11 +35,9 @@ const initialFormData: ChildFormData = {
 }
 
 export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormProps) {
-  const [formData, setFormData] = useState<ChildFormData>(initialFormData)
+  const [formData, setFormData] = useState<ChildCreate>(initialFormData)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 
   useEffect(() => {
     if (childId) {
@@ -66,17 +49,14 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
 
   const fetchChildData = async () => {
     try {
-      const response = await fetch(`${API_BASE}/children/${childId}`)
-      if (!response.ok) throw new Error("Error al cargar los datos del niño")
-      const data = await response.json()
-
+      const data = await childApiService.getChildById(childId!)
       setFormData({
         nombre: data.nombre || "",
         apellido: data.apellido || "",
-        tipo_documento: data.tipo_documento || "",
+        tipo_documento: data.tipo_documento || "RC",
         documento: data.documento || "",
         fecha_nacimiento: data.fecha_nacimiento || "",
-        sexo: data.sexo || "",
+        sexo: data.sexo || "M",
         direccion: data.direccion || "",
         institucion: data.institucion || "",
         barrio: data.barrio || "",
@@ -120,7 +100,7 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
       }
     }
 
-    // Validar teléfono (formato básico)
+    // Validar teléfono
     if (formData.telefono_acudiente && !/^\d{7,15}$/.test(formData.telefono_acudiente.replace(/\s/g, ""))) {
       newErrors.telefono_acudiente = "El teléfono debe tener entre 7 y 15 dígitos"
     }
@@ -137,32 +117,19 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
     setLoading(true)
 
     try {
-      const url = childId ? `${API_BASE}/children/${childId}` : `${API_BASE}/children/`
-      const method = childId ? "PUT" : "POST"
+      if (childId) {
+        // Actualizar niño existente
+        const updateData: ChildUpdate = Object.fromEntries(
+          Object.entries(formData).filter(([_, value]) => value !== "" && value !== false),
+        ) as ChildUpdate
 
-      // Preparar payload según el método
-      const payload = childId
-        ? (Object.fromEntries(
-            Object.entries(formData).filter(([_, value]) => value !== "" && value !== false),
-          ) as Partial<ChildFormData>)
-        : formData
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Error al procesar la solicitud")
+        const result = await childApiService.updateChild(childId, updateData)
+        toast.success(result.message || "Niño actualizado exitosamente")
+      } else {
+        // Crear nuevo niño
+        const result = await childApiService.createChild(formData)
+        toast.success(result.message || "Niño registrado exitosamente")
       }
-
-      const result = await response.json()
-
-      toast.success(result.message || `Niño ${childId ? "actualizado" : "registrado"} exitosamente`)
 
       onSuccess()
     } catch (error) {
@@ -172,7 +139,7 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
     }
   }
 
-  const handleInputChange = (field: keyof ChildFormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof ChildCreate, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
@@ -222,6 +189,8 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
                   <SelectItem value="RC">Registro Civil (RC)</SelectItem>
                   <SelectItem value="TI">Tarjeta de Identidad (TI)</SelectItem>
                   <SelectItem value="CC">Cédula de Ciudadanía (CC)</SelectItem>
+                  <SelectItem value="CE">Cédula de Extranjería (CE)</SelectItem>
+                  <SelectItem value="PA">Pasaporte (PA)</SelectItem>
                 </SelectContent>
               </Select>
               {errors.tipo_documento && <p className="text-sm text-red-500 mt-1">{errors.tipo_documento}</p>}
@@ -259,7 +228,6 @@ export default function ChildForm({ childId, onSuccess, onCancel }: ChildFormPro
                 <SelectContent>
                   <SelectItem value="M">Masculino</SelectItem>
                   <SelectItem value="F">Femenino</SelectItem>
-                  {/*<SelectItem value="OTRO">Otro</SelectItem>*/}
                 </SelectContent>
               </Select>
               {errors.sexo && <p className="text-sm text-red-500 mt-1">{errors.sexo}</p>}

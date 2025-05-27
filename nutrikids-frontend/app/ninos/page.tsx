@@ -1,16 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Edit, Trash2, Eye, Users } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Users, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 import ChildForm from "./components/child-form"
 import ChildDetails from "./components/child-details"
+import { toast } from "sonner"
 
 interface ChildSummary {
   id: string
@@ -40,6 +41,7 @@ export default function NinosPage() {
   const [editingChild, setEditingChild] = useState<string | null>(null)
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({})
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
+  const router = useRouter()
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -117,11 +119,15 @@ export default function NinosPage() {
       if (!response.ok) throw new Error("Error al eliminar")
 
       toast.success("Niño eliminado exitosamente")
-
       fetchChildren()
     } catch (error) {
       toast.error("No se pudo eliminar el niño")
     }
+  }
+
+  const handleNavigateToData = (childId: string) => {
+    // Navegación corregida
+    router.push(`/ninos/${childId}/datos`)
   }
 
   const calculateAge = (birthDate: string) => {
@@ -140,8 +146,10 @@ export default function NinosPage() {
   const getSexoBadgeColor = (sexo: string) => {
     switch (sexo) {
       case "MASCULINO":
+      case "M":
         return "bg-blue-100 text-blue-800"
       case "FEMENINO":
+      case "F":
         return "bg-pink-100 text-pink-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -255,9 +263,9 @@ export default function NinosPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Todos</SelectItem>
-                  <SelectItem value="M">Masculino</SelectItem>
-                  <SelectItem value="F">Femenino</SelectItem>
-                  {/*<SelectItem value="OTRO">Otro</SelectItem>*/}
+                  <SelectItem value="MASCULINO">Masculino</SelectItem>
+                  <SelectItem value="FEMENINO">Femenino</SelectItem>
+                  <SelectItem value="OTRO">Otro</SelectItem>
                 </SelectContent>
               </Select>
               <div className="md:col-span-3 lg:col-span-5 flex gap-2">
@@ -325,6 +333,16 @@ export default function NinosPage() {
                     {selectedChild && <ChildDetails childId={selectedChild} />}
                   </DialogContent>
                 </Dialog>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleNavigateToData(child.id)}
+                  className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                >
+                  <Brain className="w-4 h-4 mr-1" />
+                  Datos
+                </Button>
 
                 <Button
                   variant="outline"
